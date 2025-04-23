@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Advanced English Quiz Challenge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto+Slab:wght@700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #4a90e2; /* Mavi tonu */
+        --secondary-color: #50e3c2; /* Turkuaz/Yeşil tonu */
+        --correct-color: #7ed321; /* Yeşil */
+        --wrong-color: #d0021b; /* Kırmızı */
+        --neutral-light: #f8f9fa;
+        --neutral-medium: #e9ecef;
+        --neutral-dark: #343a40;
+        --text-light: #ffffff;
+        --text-dark: #212529;
+        --background-gradient: linear-gradient(
+          135deg,
+          #6a11cb 0%,
+          #2575fc 100%
+        ); /* Mor-Mavi */
+        --card-background: rgba(255, 255, 255, 0.95);
+        --border-radius: 12px;
+        --box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        --transition-speed: 0.3s;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        font-size: 16px; /* Responsive tasarım için temel */
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--background-gradient);
+        color: var(--text-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 20px;
+        overflow-x: hidden;
+      }
+
+      .quiz-app-container {
+        background-color: var(--card-background);
+        border-radius: var(--border-radius);
+        box-shadow: var(--box-shadow);
+        width: 100%;
+        max-width: 700px; /* Biraz daha geniş */
+        overflow: hidden; /* İçerik taşmasını engelle */
+        display: flex;
+        flex-direction: column;
+        min-height: 550px; /* Minimum yükseklik */
+        transition: all var(--transition-speed) ease;
+      }
+
+      .quiz-header {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        padding: 20px 30px;
+        text-align: center;
+        border-bottom: 3px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .quiz-header h1 {
+        font-family: "Roboto Slab", serif;
+        font-size: 1.8rem;
+        margin: 0;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      .quiz-content {
+        padding: 30px 40px;
+        flex-grow: 1; /* İçeriğin kalan alanı doldurmasını sağla */
+        display: flex; /* İçeriği dikeyde ortalamak için */
+        flex-direction: column;
+        justify-content: center; /* Dikeyde ortala */
+        position: relative; /* Animasyonlar için */
+        transition: opacity var(--transition-speed) ease;
+      }
+
+      /* --- Start Screen --- */
+      #start-screen {
+        text-align: center;
+      }
+      #start-screen h2 {
+        color: var(--primary-color);
+        font-size: 2rem;
+        margin-bottom: 15px;
+      }
+      #start-screen p {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+      #start-button {
+        background-color: var(--secondary-color);
+        color: var(--text-dark);
+        font-weight: 600;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 50px; /* Yuvarlak buton */
+        cursor: pointer;
+        transition: all var(--transition-speed) ease;
+        box-shadow: 0 4px 10px rgba(80, 227, 194, 0.4);
+      }
+      #start-button:hover {
+        background-color: #48d1b2; /* Biraz daha koyu */
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(80, 227, 194, 0.5);
+      }
+      #start-button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(80, 227, 194, 0.4);
+      }
+
+      /* --- Quiz Area --- */
+      #quiz-area {
+        width: 100%;
+      }
+
+      #progress-indicator {
+        text-align: right;
+        font-size: 0.9rem;
+        color: #777;
+        margin-bottom: 20px;
+        font-weight: 600;
+      }
+      #current-q-num,
+      #total-q-in-quiz {
+        font-weight: 700;
+        color: var(--primary-color);
+      }
+
+      #question-container {
+        margin-bottom: 30px;
+      }
+
+      #question-text {
+        font-size: 1.5rem; /* Daha büyük soru metni */
+        font-weight: 600;
+        margin-bottom: 25px;
+        line-height: 1.5;
+        color: var(--neutral-dark);
+        min-height: 60px; /* İçerik değişiminde zıplamayı önle */
+      }
+
+      #options-container {
+        display: grid;
+        grid-template-columns: 1fr; /* Mobil öncelikli */
+        gap: 12px;
+      }
+
+      @media (min-width: 576px) {
+        /* Daha geniş ekranlarda 2 sütun */
+        #options-container {
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+      }
+
+      .option-button {
+        background-color: var(--neutral-light);
+        color: var(--neutral-dark);
+        border: 2px solid var(--neutral-medium);
+        padding: 15px;
+        font-size: 1rem;
+        font-family: inherit;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-speed) ease;
+        text-align: left;
+        display: flex; /* İkon için */
+        align-items: center;
+      }
+      .option-button .option-text {
+        flex-grow: 1;
+      }
+      .option-button .feedback-icon {
+        font-size: 1.2rem;
+        margin-left: 10px;
+        opacity: 0;
+        transition: opacity var(--transition-speed) ease;
+      }
+
+      .option-button:hover:not(:disabled) {
+        background-color: var(--neutral-medium);
+        border-color: var(--primary-color);
+        transform: translateY(-2px);
+      }
+
+      .option-button:disabled {
+        cursor: not-allowed;
+        opacity: 0.8;
+      }
+
+      .option-button.correct {
+        background-color: #e9f9e0; /* Açık yeşil */
+        border-color: var(--correct-color);
+        color: #38761d; /* Koyu yeşil */
+        font-weight: 600;
+      }
+      .option-button.correct .feedback-icon::before {
+        content: "✔"; /* Checkmark */
+        color: var(--correct-color);
+      }
+      .option-button.correct .feedback-icon {
+        opacity: 1;
+      }
+
+      .option-button.wrong {
+        background-color: #fdecea; /* Açık kırmızı */
+        border-color: var(--wrong-color);
+        color: #a00013; /* Koyu kırmızı */
+        font-weight: 600;
+      }
+      .option-button.wrong .feedback-icon::before {
+        content: "✖"; /* Cross mark */
+        color: var(--wrong-color);
+      }
+      .option-button.wrong .feedback-icon {
+        opacity: 1;
+      }
+
+      /* Seçilmeyen ama doğru olan şıkkı göstermek için */
+      .option-button.reveal-correct {
+        background-color: #e9f9e0;
+        border-color: var(--correct-color);
+        opacity: 0.9;
+      }
+
+      #feedback-area {
+        margin-top: 20px;
+        font-weight: 600;
+        min-height: 25px;
+        text-align: center;
+        font-size: 1.1rem;
+      }
+      #feedback-text.correct {
+        color: var(--correct-color);
+      }
+      #feedback-text.wrong {
+        color: var(--wrong-color);
+      }
+
+      /* --- Results Area --- */
+      #results-area {
+        text-align: center;
+      }
+      #results-area h2 {
+        color: var(--primary-color);
+        font-size: 2.2rem;
+        margin-bottom: 15px;
+      }
+      #results-area p {
+        font-size: 1.2rem;
+        color: var(--neutral-dark);
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+      #final-score,
+      #total-questions-in-quiz {
+        font-weight: 700;
+        font-size: 1.4rem;
+      }
+      #final-score {
+        color: var(--secondary-color);
+      }
+
+      #restart-button {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        font-weight: 600;
+        padding: 15px 40px;
+        font-size: 1.2rem;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        transition: all var(--transition-speed) ease;
+        box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+      }
+      #restart-button:hover {
+        background-color: #3a80d2; /* Biraz daha koyu */
+        transform: translateY(-3px);
+        box-shadow: 0 7px 15px rgba(74, 144, 226, 0.5);
+      }
+      #restart-button:active {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(74, 144, 226, 0.4);
+      }
+
+      /* --- Utility Classes --- */
+      .hidden {
+        display: none !important;
+      } /* Important to override other display properties */
+      .visually-hidden {
+        /* Screen reader only */
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(255, 255, 255, 0.8);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 10;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition-speed),
+          visibility var(--transition-speed);
+      }
+      .loading-overlay.visible {
+        opacity: 1;
+        visibility: visible;
+      }
+
+      /* Fade-in animation for content areas */
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      #start-screen,
+      #quiz-area,
+      #results-area {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-app-container">
+      <header class="quiz-header">
+        <h1>Advanced English Quiz</h1>
+      </header>
+
+      <main class="quiz-content">
+        <div id="loading-indicator" class="loading-overlay">
+          <p>Loading Questions...</p>
+        </div>
+
+        <!-- 1. Start Screen (Initially Visible) -->
+        <div id="start-screen">
+          <h2>Ready for a Challenge?</h2>
+          <p>Test your English skills with 10 random questions. Good luck!</p>
+          <button id="start-button">Start Quiz</button>
+        </div>
+
+        <!-- 2. Quiz Area (Initially Hidden) -->
+        <div id="quiz-area" class="hidden">
+          <div id="progress-indicator">
+            Question <span id="current-q-num">1</span> of
+            <span id="total-q-in-quiz">10</span>
+          </div>
+          <div id="question-container">
+            <h2 id="question-text">Question text goes here...</h2>
+            <div id="options-container">
+              <!-- Option buttons will be dynamically generated -->
+            </div>
+          </div>
+          <div id="feedback-area">
+            <p id="feedback-text"></p>
+          </div>
+        </div>
+
+        <!-- 3. Results Area (Initially Hidden) -->
+        <div id="results-area" class="hidden">
+          <h2>Quiz Complete!</h2>
+          <p>Your final score is:</p>
+          <p>
+            <span id="final-score">0</span> /
+            <span id="total-questions-in-quiz">10</span>
+          </p>
+          <button id="restart-button">Take Another Quiz</button>
+        </div>
+      </main>
+    </div>
+
+    <script>
+      // --- DOM Elements ---
+      const startScreen = document.getElementById("start-screen");
+      const quizArea = document.getElementById("quiz-area");
+      const resultsArea = document.getElementById("results-area");
+      const startButton = document.getElementById("start-button");
+      const restartButton = document.getElementById("restart-button");
+      const questionText = document.getElementById("question-text");
+      const optionsContainer = document.getElementById("options-container");
+      const feedbackText = document.getElementById("feedback-text");
+      const currentQNumSpan = document.getElementById("current-q-num");
+      const totalQInQuizSpan = document.getElementById("total-q-in-quiz");
+      const finalScoreSpan = document.getElementById("final-score");
+      const totalQuestionsInQuizSpan = document.getElementById(
+        "total-questions-in-quiz"
+      );
+      const loadingIndicator = document.getElementById("loading-indicator");
+
+      // --- State Variables ---
+      let allQuestions = [];
+      let currentQuizQuestions = [];
+      let currentQuestionIndex = 0;
+      let score = 0;
+      const QUESTIONS_PER_QUIZ = 10;
+      let questionsLoaded = false;
+
+      // --- Utility Functions ---
+
+      // Fisher-Yates (Knuth) Shuffle Algorithm
+      function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]]; // Swap elements
+        }
+        return array;
+      }
+
+      function showLoading(isLoading) {
+        if (isLoading) {
+          loadingIndicator.classList.add("visible");
+        } else {
+          loadingIndicator.classList.remove("visible");
+        }
+      }
+
+      function switchScreen(screenToShow) {
+        startScreen.classList.add("hidden");
+        quizArea.classList.add("hidden");
+        resultsArea.classList.add("hidden");
+
+        screenToShow.classList.remove("hidden");
+        // Trigger reflow for animation restart
+        void screenToShow.offsetWidth;
+        screenToShow.style.animation = "fadeIn 0.5s ease-out forwards";
+      }
+
+      // --- Core Functions ---
+
+      // 1. Fetch all questions from JSON
+      async function fetchAllQuestions() {
+        if (questionsLoaded) return true; // Avoid refetching if already loaded
+
+        showLoading(true);
+        try {
+          const response = await fetch("questions.json");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          allQuestions = await response.json();
+          if (!Array.isArray(allQuestions) || allQuestions.length === 0) {
+            throw new Error("Invalid or empty question data received.");
+          }
+          questionsLoaded = true;
+          showLoading(false);
+          return true;
+        } catch (error) {
+          console.error("Error fetching questions:", error);
+          questionText.textContent = `Failed to load questions: ${error.message}. Please check the console and the 'questions.json' file.`;
+          optionsContainer.innerHTML = "";
+          showLoading(false);
+          // Display error on start screen maybe?
+          startScreen.querySelector(
+            "p"
+          ).textContent = `Error loading questions. Please check the file and try refreshing. (${error.message})`;
+          startButton.disabled = true;
+          return false;
+        }
+      }
+
+      // 2. Start the Quiz
+      async function startQuiz() {
+        startButton.disabled = true; // Prevent double clicks
+
+        const success = await fetchAllQuestions();
+        if (!success) {
+          startButton.disabled = false; // Re-enable if fetch failed
+          return;
+        }
+
+        // Select random questions
+        currentQuizQuestions = shuffleArray([...allQuestions]).slice(
+          0,
+          QUESTIONS_PER_QUIZ
+        );
+        if (currentQuizQuestions.length === 0) {
+          alert("No questions available to start the quiz!");
+          startButton.disabled = false;
+          return;
+        }
+
+        // Reset state
+        currentQuestionIndex = 0;
+        score = 0;
+        feedbackText.textContent = "";
+        feedbackText.className = "";
+
+        // Update total questions display (handles cases < 10)
+        const actualQuizLength = currentQuizQuestions.length;
+        totalQInQuizSpan.textContent = actualQuizLength;
+        totalQuestionsInQuizSpan.textContent = actualQuizLength;
+
+        // Switch to quiz screen and display first question
+        switchScreen(quizArea);
+        displayQuestion();
+        startButton.disabled = false; // Re-enable for future use (although hidden now)
+      }
+
+      // 3. Display the current question and options
+      function displayQuestion() {
+        if (currentQuestionIndex >= currentQuizQuestions.length) {
+          showResults();
+          return;
+        }
+
+        const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+        questionText.textContent = currentQuestion.question;
+        optionsContainer.innerHTML = ""; // Clear previous options
+        feedbackText.textContent = ""; // Clear feedback from previous q
+        feedbackText.className = "";
+
+        // Update progress number
+        currentQNumSpan.textContent = currentQuestionIndex + 1;
+
+        // Create buttons for each option
+        currentQuestion.options.forEach((option) => {
+          const button = document.createElement("button");
+          button.classList.add("option-button");
+
+          const textSpan = document.createElement("span");
+          textSpan.classList.add("option-text");
+          textSpan.textContent = option;
+
+          const iconSpan = document.createElement("span");
+          iconSpan.classList.add("feedback-icon");
+          iconSpan.setAttribute("aria-hidden", "true"); // Hide decorative icon from screen readers
+
+          button.appendChild(textSpan);
+          button.appendChild(iconSpan);
+
+          button.addEventListener("click", handleAnswer);
+          optionsContainer.appendChild(button);
+        });
+
+        enableOptionButtons();
+      }
+
+      // 4. Handle user's answer selection
+      function handleAnswer(event) {
+        disableOptionButtons(); // Prevent multiple clicks
+
+        const selectedButton = event.currentTarget; // Use currentTarget
+        const selectedAnswer =
+          selectedButton.querySelector(".option-text").textContent;
+        const currentQuestion = currentQuizQuestions[currentQuestionIndex];
+        const correctAnswer = currentQuestion.correctAnswer;
+
+        let isCorrect = false;
+        if (selectedAnswer === correctAnswer) {
+          score++;
+          isCorrect = true;
+          selectedButton.classList.add("correct");
+          feedbackText.textContent = "Correct!";
+          feedbackText.className = "correct";
+        } else {
+          selectedButton.classList.add("wrong");
+          feedbackText.textContent = `Incorrect!`;
+          feedbackText.className = "wrong";
+
+          // Highlight the correct answer
+          Array.from(optionsContainer.children).forEach((button) => {
+            if (
+              button.querySelector(".option-text").textContent === correctAnswer
+            ) {
+              button.classList.add("reveal-correct"); // Special class for non-selected correct answer
+            }
+          });
+        }
+
+        // Wait a bit before showing the next question or results
+        setTimeout(() => {
+          currentQuestionIndex++;
+          if (currentQuestionIndex < currentQuizQuestions.length) {
+            displayQuestion();
+          } else {
+            showResults();
+          }
+        }, 1500); // 1.5 second delay
+      }
+
+      // 5. Disable option buttons after an answer
+      function disableOptionButtons() {
+        Array.from(optionsContainer.children).forEach((button) => {
+          button.disabled = true;
+        });
+      }
+      // 6. Re-enable option buttons for the next question
+      function enableOptionButtons() {
+        Array.from(optionsContainer.children).forEach((button) => {
+          button.disabled = false;
+          // Remove result classes from previous question
+          button.classList.remove("correct", "wrong", "reveal-correct");
+        });
+      }
+
+      // 7. Show final results
+      function showResults() {
+        finalScoreSpan.textContent = score;
+        switchScreen(resultsArea);
+      }
+
+      // 8. Reset to Start Screen
+      function resetQuiz() {
+        // No need to reset score/index here, startQuiz handles it
+        switchScreen(startScreen);
+      }
+
+      // --- Event Listeners ---
+      startButton.addEventListener("click", startQuiz);
+      restartButton.addEventListener("click", resetQuiz);
+
+      // --- Initial Load ---
+      // Optional: Pre-fetch questions silently on load for faster start?
+      // document.addEventListener('DOMContentLoaded', fetchAllQuestions);
+      // Or just show the start screen immediately
+      document.addEventListener("DOMContentLoaded", () => {
+        switchScreen(startScreen); // Ensure start screen is visible on load
+      });
+    </script>
+  </body>
+</html>

@@ -3,6 +3,23 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Practice your English skills with this interactive quiz featuring grammar, vocabulary and more."
+    />
+    <meta
+      name="keywords"
+      content="English quiz, ESL, grammar practice, vocabulary test, language learning"
+    />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://example.com/advanced-english-quiz" />
+    <meta property="og:title" content="Advanced English Quiz Challenge" />
+    <meta
+      property="og:description"
+      content="Challenge yourself with randomized English questions and track your progress."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://example.com/advanced-english-quiz" />
     <title>Advanced English Quiz Challenge</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -107,6 +124,16 @@
         margin-bottom: 30px;
         line-height: 1.6;
       }
+      #start-screen label {
+        display: block;
+        margin: 20px 0 10px;
+        font-size: 1rem;
+        font-weight: 600;
+      }
+      #question-count {
+        width: 100%;
+        margin-bottom: 30px;
+      }
       #start-button {
         background-color: var(--secondary-color);
         color: var(--text-dark);
@@ -145,6 +172,21 @@
       #total-q-in-quiz {
         font-weight: 700;
         color: var(--primary-color);
+      }
+
+      #progress-bar {
+        width: 100%;
+        height: 10px;
+        background-color: var(--neutral-medium);
+        border-radius: var(--border-radius);
+        overflow: hidden;
+        margin-bottom: 20px;
+      }
+      #progress-fill {
+        height: 100%;
+        width: 0%;
+        background-color: var(--secondary-color);
+        transition: width var(--transition-speed) ease;
       }
 
       #question-container {
@@ -376,7 +418,11 @@
         <!-- 1. Start Screen (Initially Visible) -->
         <div id="start-screen">
           <h2>Ready for a Challenge?</h2>
-          <p>Test your English skills with 10 random questions. Good luck!</p>
+          <p>Choose the number of questions and test your English skills.</p>
+          <label for="question-count">
+            Number of Questions: <span id="question-count-display">10</span>
+          </label>
+          <input type="range" id="question-count" min="5" max="25" value="10" />
           <button id="start-button">Start Quiz</button>
         </div>
 
@@ -386,6 +432,7 @@
             Question <span id="current-q-num">1</span> of
             <span id="total-q-in-quiz">10</span>
           </div>
+          <div id="progress-bar"><div id="progress-fill"></div></div>
           <div id="question-container">
             <h2 id="question-text">Question text goes here...</h2>
             <div id="options-container">
@@ -405,6 +452,7 @@
             <span id="final-score">0</span> /
             <span id="total-questions-in-quiz">10</span>
           </p>
+          <p>Your accuracy: <span id="percentage-score">0</span>%</p>
           <button id="restart-button">Take Another Quiz</button>
         </div>
       </main>
@@ -427,14 +475,23 @@
         "total-questions-in-quiz"
       );
       const loadingIndicator = document.getElementById("loading-indicator");
+      const questionCountInput = document.getElementById("question-count");
+      const questionCountDisplay = document.getElementById(
+        "question-count-display"
+      );
+      const progressFill = document.getElementById("progress-fill");
+      const percentageScoreSpan = document.getElementById("percentage-score");
 
       // --- State Variables ---
       let allQuestions = [];
       let currentQuizQuestions = [];
       let currentQuestionIndex = 0;
       let score = 0;
-      const QUESTIONS_PER_QUIZ = 10;
+      let QUESTIONS_PER_QUIZ = 10;
       let questionsLoaded = false;
+      questionCountInput.addEventListener("input", () => {
+        questionCountDisplay.textContent = questionCountInput.value;
+      });
 
       // --- Utility Functions ---
 
@@ -502,6 +559,7 @@
       // 2. Start the Quiz
       async function startQuiz() {
         startButton.disabled = true; // Prevent double clicks
+        QUESTIONS_PER_QUIZ = parseInt(questionCountInput.value, 10);
 
         const success = await fetchAllQuestions();
         if (!success) {
@@ -525,11 +583,13 @@
         score = 0;
         feedbackText.textContent = "";
         feedbackText.className = "";
+        progressFill.style.width = "0%";
 
         // Update total questions display (handles cases < 10)
         const actualQuizLength = currentQuizQuestions.length;
         totalQInQuizSpan.textContent = actualQuizLength;
         totalQuestionsInQuizSpan.textContent = actualQuizLength;
+        percentageScoreSpan.textContent = "0";
 
         // Switch to quiz screen and display first question
         switchScreen(quizArea);
@@ -552,9 +612,13 @@
 
         // Update progress number
         currentQNumSpan.textContent = currentQuestionIndex + 1;
+        const progressPercent =
+          (currentQuestionIndex / currentQuizQuestions.length) * 100;
+        progressFill.style.width = `${progressPercent}%`;
 
         // Create buttons for each option
-        currentQuestion.options.forEach((option) => {
+        const shuffledOptions = shuffleArray([...currentQuestion.options]);
+        shuffledOptions.forEach((option) => {
           const button = document.createElement("button");
           button.classList.add("option-button");
 
@@ -637,6 +701,11 @@
       // 7. Show final results
       function showResults() {
         finalScoreSpan.textContent = score;
+        const percentage = Math.round(
+          (score / currentQuizQuestions.length) * 100
+        );
+        percentageScoreSpan.textContent = percentage;
+        progressFill.style.width = "100%";
         switchScreen(resultsArea);
       }
 
@@ -656,6 +725,7 @@
       // Or just show the start screen immediately
       document.addEventListener("DOMContentLoaded", () => {
         switchScreen(startScreen); // Ensure start screen is visible on load
+        questionCountDisplay.textContent = questionCountInput.value;
       });
     </script>
   </body>
